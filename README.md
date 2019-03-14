@@ -1,3 +1,21 @@
+## 修改laravel-admin使之可以部署在子目录
+### 使用方法
+```
+{
+    "require": {
+        "encore/laravel-admin": "dev-modify"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/2329697501/laravel-admin"
+        }
+    ]
+}
+
+
+```
+
 <p align="center">
 <a href="https://laravel-admin.org/">
 <img src="https://laravel-admin.org/images/logo002.png" alt="laravel-admin">
