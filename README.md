@@ -16,6 +16,20 @@
 
 ```
 
+## 与官网代码同步方案
+```
+
+git remote add laravel-admin https://github.com/z-song/laravel-admin.git
+git checkout master
+git pull laravel-admin master
+git checkout modify
+git merge master
+git push origin master
+git push origin modify
+
+```
+
+
 <p align="center">
 <a href="https://laravel-admin.org/">
 <img src="https://laravel-admin.org/images/logo002.png" alt="laravel-admin">
