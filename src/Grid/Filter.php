@@ -3,24 +3,9 @@
 namespace Encore\Admin\Grid;
 
 use Encore\Admin\Grid\Filter\AbstractFilter;
-use Encore\Admin\Grid\Filter\Between;
-use Encore\Admin\Grid\Filter\Date;
-use Encore\Admin\Grid\Filter\Day;
-use Encore\Admin\Grid\Filter\Equal;
 use Encore\Admin\Grid\Filter\Group;
-use Encore\Admin\Grid\Filter\Gt;
-use Encore\Admin\Grid\Filter\Hidden;
-use Encore\Admin\Grid\Filter\Ilike;
-use Encore\Admin\Grid\Filter\In;
 use Encore\Admin\Grid\Filter\Layout\Layout;
-use Encore\Admin\Grid\Filter\Like;
-use Encore\Admin\Grid\Filter\Lt;
-use Encore\Admin\Grid\Filter\Month;
-use Encore\Admin\Grid\Filter\NotEqual;
-use Encore\Admin\Grid\Filter\NotIn;
 use Encore\Admin\Grid\Filter\Scope;
-use Encore\Admin\Grid\Filter\Where;
-use Encore\Admin\Grid\Filter\Year;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Collection;
@@ -61,7 +46,10 @@ class Filter implements Renderable
     /**
      * @var array
      */
-    protected static $supports = [];
+    protected $supports = [
+        'equal', 'notEqual', 'ilike', 'like', 'gt', 'lt', 'between', 'group',
+        'where', 'in', 'notIn', 'date', 'day', 'month', 'year', 'hidden',
+    ];
 
     /**
      * If use id filter.
@@ -537,7 +525,7 @@ class Filter implements Renderable
     public function urlWithoutFilters()
     {
         /** @var Collection $columns */
-        $columns = collect($this->filters)->map->getColumn()->flatten();
+        $columns = collect($this->filters)->map->getColumn();
 
         $pageKey = 'page';
 
@@ -596,61 +584,6 @@ class Filter implements Renderable
     }
 
     /**
-     * @param string $name
-     * @param string $filterClass
-     */
-    public static function extend($name, $filterClass)
-    {
-        if (!is_subclass_of($filterClass, AbstractFilter::class)) {
-            throw new \InvalidArgumentException("The class [$filterClass] must be a type of ".AbstractFilter::class.'.');
-        }
-
-        static::$supports[$name] = $filterClass;
-    }
-
-    /**
-     * @param string $abstract
-     * @param array  $arguments
-     *
-     * @return AbstractFilter
-     */
-    public function resolveFilter($abstract, $arguments)
-    {
-        if (isset(static::$supports[$abstract])) {
-            return new static::$supports[$abstract](...$arguments);
-        }
-    }
-
-    /**
-     * Register builtin filters.
-     */
-    public static function registerFilters()
-    {
-        $filters = [
-            'equal'    => Equal::class,
-            'notEqual' => NotEqual::class,
-            'ilike'    => Ilike::class,
-            'like'     => Like::class,
-            'gt'       => Gt::class,
-            'lt'       => Lt::class,
-            'between'  => Between::class,
-            'group'    => Group::class,
-            'where'    => Where::class,
-            'in'       => In::class,
-            'notIn'    => NotIn::class,
-            'date'     => Date::class,
-            'day'      => Day::class,
-            'month'    => Month::class,
-            'year'     => Year::class,
-            'hidden'   => Hidden::class,
-        ];
-
-        foreach ($filters as $name => $filterClass) {
-            static::extend($name, $filterClass);
-        }
-    }
-
-    /**
      * Generate a filter object and add to grid.
      *
      * @param string $method
@@ -660,8 +593,10 @@ class Filter implements Renderable
      */
     public function __call($method, $arguments)
     {
-        if ($filter = $this->resolveFilter($method, $arguments)) {
-            return $this->addFilter($filter);
+        if (in_array($method, $this->supports)) {
+            $className = '\\Encore\\Admin\\Grid\\Filter\\'.ucfirst($method);
+
+            return $this->addFilter(new $className(...$arguments));
         }
 
         return $this;

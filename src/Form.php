@@ -188,11 +188,9 @@ class Form implements Renderable
     protected $isSoftDeletes = false;
 
     /**
-     * Initialization closure array.
-     *
-     * @var []Closure
+     * @var Closure
      */
-    protected static $initCallbacks;
+    protected static $initCallback;
 
     /**
      * Create a new form instance.
@@ -212,7 +210,9 @@ class Form implements Renderable
 
         $this->isSoftDeletes = in_array(SoftDeletes::class, class_uses($this->model));
 
-        $this->callInitCallbacks();
+        if (static::$initCallback instanceof Closure) {
+            call_user_func(static::$initCallback, $this);
+        }
     }
 
     /**
@@ -222,21 +222,7 @@ class Form implements Renderable
      */
     public static function init(Closure $callback = null)
     {
-        static::$initCallbacks[] = $callback;
-    }
-
-    /**
-     * Call the initialization closure array in sequence.
-     */
-    protected function callInitCallbacks()
-    {
-        if (empty(static::$initCallbacks)) {
-            return;
-        }
-
-        foreach (static::$initCallbacks as $callback) {
-            call_user_func($callback, $this);
-        }
+        static::$initCallback = $callback;
     }
 
     /**
@@ -802,7 +788,6 @@ class Form implements Renderable
                     $related->save();
                     break;
                 case $relation instanceof Relations\BelongsTo:
-                case $relation instanceof Relations\MorphTo:
 
                     $parent = $this->model->$name;
 

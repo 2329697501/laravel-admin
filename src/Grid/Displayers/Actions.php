@@ -57,16 +57,6 @@ class Actions extends AbstractDisplayer
     }
 
     /**
-     * Get route key name of current row.
-     *
-     * @return mixed
-     */
-    public function getRouteKey()
-    {
-        return $this->row->{$this->row->getRouteKeyName()};
-    }
-
-    /**
      * Disable view action.
      *
      * @return $this
@@ -167,7 +157,7 @@ class Actions extends AbstractDisplayer
     protected function renderView()
     {
         return <<<EOT
-<a href="{$this->getResource()}/{$this->getRouteKey()}">
+<a href="{$this->getResource()}/{$this->getKey()}">
     <i class="fa fa-eye"></i>
 </a>
 EOT;
@@ -181,7 +171,7 @@ EOT;
     protected function renderEdit()
     {
         return <<<EOT
-<a href="{$this->getResource()}/{$this->getRouteKey()}/edit">
+<a href="{$this->getResource()}/{$this->getKey()}/edit">
     <i class="fa fa-edit"></i>
 </a>
 EOT;
@@ -193,17 +183,6 @@ EOT;
      * @return string
      */
     protected function renderDelete()
-    {
-        $this->setupDeleteScript();
-
-        return <<<EOT
-<a href="javascript:void(0);" data-id="{$this->getKey()}" class="{$this->grid->getGridRowName()}-delete">
-    <i class="fa fa-trash"></i>
-</a>
-EOT;
-    }
-
-    protected function setupDeleteScript()
     {
         $deleteConfirm = trans('admin.delete_confirm');
         $confirm = trans('admin.confirm');
@@ -255,5 +234,11 @@ $('.{$this->grid->getGridRowName()}-delete').unbind('click').click(function() {
 SCRIPT;
 
         Admin::script($script);
+
+        return <<<EOT
+<a href="javascript:void(0);" data-id="{$this->getKey()}" class="{$this->grid->getGridRowName()}-delete">
+    <i class="fa fa-trash"></i>
+</a>
+EOT;
     }
 }

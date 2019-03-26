@@ -143,13 +143,6 @@ class Grid
     protected $actionsCallback;
 
     /**
-     * Actions column display class.
-     *
-     * @var string
-     */
-    protected $actionsClass = Displayers\Actions::class;
-
-    /**
      * Options for grid.
      *
      * @var array
@@ -175,11 +168,9 @@ class Grid
     protected $footer;
 
     /**
-     * Initialization closure array.
-     *
-     * @var []Closure
+     * @var Closure
      */
-    protected static $initCallbacks = [];
+    protected static $initCallback;
 
     /**
      * Create a new grid instance.
@@ -202,7 +193,9 @@ class Grid
 
         $this->handleExportRequest();
 
-        $this->callInitCallbacks();
+        if (static::$initCallback instanceof Closure) {
+            call_user_func(static::$initCallback, $this);
+        }
     }
 
     /**
@@ -212,21 +205,7 @@ class Grid
      */
     public static function init(Closure $callback = null)
     {
-        static::$initCallbacks[] = $callback;
-    }
-
-    /**
-     * Call the initialization closure array in sequence.
-     */
-    protected function callInitCallbacks()
-    {
-        if (empty(static::$initCallbacks)) {
-            return;
-        }
-
-        foreach (static::$initCallbacks as $callback) {
-            call_user_func($callback, $this);
-        }
+        static::$initCallback = $callback;
     }
 
     /**
@@ -532,19 +511,13 @@ class Grid
     /**
      * Set grid action callback.
      *
-     * @param Closure|string $actions
+     * @param Closure $callback
      *
      * @return $this
      */
-    public function actions($actions)
+    public function actions(Closure $callback)
     {
-        if ($actions instanceof Closure) {
-            $this->actionsCallback = $actions;
-        }
-
-        if (is_string($actions) && is_subclass_of($actions, Displayers\Actions::class)) {
-            $this->actionsClass = $actions;
-        }
+        $this->actionsCallback = $callback;
 
         return $this;
     }
@@ -561,7 +534,7 @@ class Grid
         }
 
         $this->addColumn('__actions__', trans('admin.action'))
-            ->displayUsing($this->actionsClass, [$this->actionsCallback]);
+            ->displayUsing(Displayers\Actions::class, [$this->actionsCallback]);
     }
 
     /**

@@ -238,7 +238,7 @@ abstract class AbstractFilter
     /**
      * Select filter.
      *
-     * @param array|\Illuminate\Support\Collection $options
+     * @param array $options
      *
      * @return Select
      */
@@ -410,9 +410,9 @@ abstract class AbstractFilter
      */
     public function getColumn()
     {
-        $parentName = $this->parent->getName();
+        $parenName = $this->parent->getName();
 
-        return $parentName ? "{$parentName}_{$this->column}" : $this->column;
+        return $parenName ? "{$parenName}_{$this->column}" : $this->column;
     }
 
     /**
