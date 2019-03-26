@@ -201,7 +201,7 @@ class Tree implements Renderable
      */
     public function saveOrder($serialize)
     {
-        $tree = json_decode(html_entity_decode($serialize), true);
+        $tree = json_decode($serialize, true);
 
         if (json_last_error() != JSON_ERROR_NONE) {
             throw new \InvalidArgumentException(json_last_error_msg());
