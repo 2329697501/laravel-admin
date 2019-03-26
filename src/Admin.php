@@ -245,7 +245,7 @@ class Admin
 
             /* @var \Illuminate\Routing\Router $router */
             $router->get('auth/login', $authController.'@getLogin');
-            $router->post('auth/login', $authController.'@postLogin');
+            $router->post('auth/login', $authController.'@postLogin')->middleware(['middleware' => 'throttle:5']);
             $router->get('auth/logout', $authController.'@getLogout');
             $router->get('auth/setting', $authController.'@getSetting');
             $router->put('auth/setting', $authController.'@putSetting');

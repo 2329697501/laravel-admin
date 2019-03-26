@@ -85,7 +85,7 @@ class Tree implements Renderable
     {
         $this->model = $model;
 
-        $this->path = app('request')->getPathInfo();
+        $this->path = url(app('request')->getPathInfo());
         $this->elementId .= uniqid();
 
         $this->setupTools();
@@ -201,7 +201,7 @@ class Tree implements Renderable
      */
     public function saveOrder($serialize)
     {
-        $tree = json_decode($serialize, true);
+        $tree = json_decode(html_entity_decode($serialize), true);
 
         if (json_last_error() != JSON_ERROR_NONE) {
             throw new \InvalidArgumentException(json_last_error_msg());

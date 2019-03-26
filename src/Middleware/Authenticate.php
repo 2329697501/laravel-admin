@@ -22,6 +22,11 @@ class Authenticate
             return redirect()->guest(admin_base_path('auth/login'));
         }
 
+        if (!Auth::guard('admin')->guest() && (Session::getId() != Auth::guard('admin')->user()->last_session)) {
+            Auth::guard('admin')->logout();
+            return redirect()->guest(admin_base_path('auth/login'))->withErrors(['username' => trans('admin.user_logout_by_other')]);
+        }
+
         return $next($request);
     }
 

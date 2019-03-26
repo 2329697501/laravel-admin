@@ -98,5 +98,7 @@ return [
         'filter_clear'       => '显示全部',
         'filter_placeholder' => '过滤',
     ],
-    'menu_titles' => [],
+    'menu_titles'           => [],
+    'user_logout_by_other'  => '您的账号在另一台设备上登录，如果不是您自己操作，请登录后及时修改密码。',
+    'password_strength'     => '密码必须8位以上，并且包含数字与字母',
 ];

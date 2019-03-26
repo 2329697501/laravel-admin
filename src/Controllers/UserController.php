@@ -155,7 +155,7 @@ class UserController extends Controller
         $form->text('username', trans('admin.username'))->rules($userNameRules);
         $form->text('name', trans('admin.name'))->rules('required');
         $form->image('avatar', trans('admin.avatar'));
-        $form->password('password', trans('admin.password'))->rules('required|confirmed');
+        $form->password('password', trans('admin.password'))->rules('required|min:8|confirmed|regex:/^(?![0-9]+$)(?![a-zA-Z]+$)/')->help(trans('admin.password_strength'));
         $form->password('password_confirmation', trans('admin.password_confirmation'))->rules('required')
             ->default(function ($form) {
                 return $form->model()->password;

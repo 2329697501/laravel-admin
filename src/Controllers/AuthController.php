@@ -38,12 +38,12 @@ class AuthController extends Controller
     public function postLogin(Request $request)
     {
         $credentials = $request->only([$this->username(), 'password']);
-        $remember = $request->get('remember', false);
+        $remember    = $request->get('remember', false);
 
         /** @var \Illuminate\Validation\Validator $validator */
         $validator = Validator::make($credentials, [
-            $this->username()   => 'required',
-            'password'          => 'required',
+            $this->username() => 'required',
+            'password'        => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -120,7 +120,7 @@ class AuthController extends Controller
         $form->display('username', trans('admin.username'));
         $form->text('name', trans('admin.name'))->rules('required');
         $form->image('avatar', trans('admin.avatar'));
-        $form->password('password', trans('admin.password'))->rules('confirmed|required');
+        $form->password('password', trans('admin.password'))->rules('required|min:8|confirmed|regex:/^(?![0-9]+$)(?![a-zA-Z]+$)/')->help(trans('admin.password_strength'));
         $form->password('password_confirmation', trans('admin.password_confirmation'))->rules('required')
             ->default(function ($form) {
                 return $form->model()->password;
@@ -151,8 +151,8 @@ class AuthController extends Controller
     protected function getFailedLoginMessage()
     {
         return Lang::has('auth.failed')
-            ? trans('auth.failed')
-            : 'These credentials do not match our records.';
+        ? trans('auth.failed')
+        : 'These credentials do not match our records.';
     }
 
     /**
@@ -181,6 +181,11 @@ class AuthController extends Controller
         admin_toastr(trans('admin.login_successful'));
 
         $request->session()->regenerate();
+
+        // admin_user表添加last_session字段，用于检测单用户登录，非同一次登录，退出上一次登录
+        $user               = $this->guard()->user();
+        $user->last_session = $request->session()->getId();
+        $user->save();
 
         return redirect()->intended($this->redirectPath());
     }
