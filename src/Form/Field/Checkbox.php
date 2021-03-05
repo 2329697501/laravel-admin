@@ -2,48 +2,131 @@
 
 namespace Encore\Admin\Form\Field;
 
-use Encore\Admin\Form\Field;
+use Illuminate\Contracts\Support\Arrayable;
 
-class Checkbox extends Field
+class Checkbox extends MultipleSelect
 {
-    protected $values;
+    protected $inline = true;
 
-    public function fill($data)
+    protected $canCheckAll = false;
+
+    protected static $css = [
+        '/vendor/laravel-admin/AdminLTE/plugins/iCheck/all.css',
+    ];
+
+    protected static $js = [
+        '/vendor/laravel-admin/AdminLTE/plugins/iCheck/icheck.min.js',
+    ];
+
+    /**
+     * @var string
+     */
+    protected $cascadeEvent = 'ifChanged';
+
+    /**
+     * Set options.
+     *
+     * @param array|callable|string $options
+     *
+     * @return $this|mixed
+     */
+    public function options($options = [])
     {
-        $relations = array_get($data, $this->column);
-
-        foreach ($relations as $relation) {
-            $this->value[] = array_pop($relation['pivot']);
+        if ($options instanceof Arrayable) {
+            $options = $options->toArray();
         }
-    }
 
-    public function setOriginal($data)
-    {
-        $relations = array_get($data, $this->column);
-
-        foreach ($relations as $relation) {
-            $this->original[] = array_pop($relation['pivot']);
+        if (is_callable($options)) {
+            $this->options = $options;
+        } else {
+            $this->options = (array) $options;
         }
-    }
-
-    public function render()
-    {
-        $this->options['checkboxClass'] = 'icheckbox_minimal-blue';
-
-        $this->script = "$('.{$this->column}').iCheck(".json_encode($this->options).');';
-
-        return parent::render()->with(['values' => $this->values]);
-    }
-
-    public function values($values)
-    {
-        $this->values = $values;
 
         return $this;
     }
 
-    public function prepare($value)
+    /**
+     * Add a checkbox above this component, so you can select all checkboxes by click on it.
+     *
+     * @return $this
+     */
+    public function canCheckAll()
     {
-        return array_filter($value);
+        $this->canCheckAll = true;
+
+        return $this;
+    }
+
+    /**
+     * Set checked.
+     *
+     * @param array|callable|string $checked
+     *
+     * @return $this
+     */
+    public function checked($checked = [])
+    {
+        if ($checked instanceof Arrayable) {
+            $checked = $checked->toArray();
+        }
+
+        $this->checked = (array) $checked;
+
+        return $this;
+    }
+
+    /**
+     * Draw inline checkboxes.
+     *
+     * @return $this
+     */
+    public function inline()
+    {
+        $this->inline = true;
+
+        return $this;
+    }
+
+    /**
+     * Draw stacked checkboxes.
+     *
+     * @return $this
+     */
+    public function stacked()
+    {
+        $this->inline = false;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function render()
+    {
+        $this->script = "$('{$this->getElementClassSelector()}').iCheck({checkboxClass:'icheckbox_minimal-blue'});";
+
+        $this->addVariables([
+            'checked'     => $this->checked,
+            'inline'      => $this->inline,
+            'canCheckAll' => $this->canCheckAll,
+        ]);
+
+        if ($this->canCheckAll) {
+            $checkAllClass = uniqid('check-all-');
+
+            $this->script .= <<<SCRIPT
+$('.{$checkAllClass}').iCheck({checkboxClass:'icheckbox_minimal-blue'}).on('ifChanged', function () {
+    if (this.checked) {
+        $('{$this->getElementClassSelector()}').iCheck('check');
+    } else {
+        $('{$this->getElementClassSelector()}').iCheck('uncheck');
+    }
+});
+SCRIPT;
+            $this->addVariables(['checkAllClass' => $checkAllClass]);
+        }
+
+        return parent::render();
     }
 }
